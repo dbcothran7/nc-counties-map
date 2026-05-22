@@ -63,7 +63,7 @@ const mouse = new THREE.Vector2();
 // ---------------- LOAD MODEL ----------------
 const loader = new GLTFLoader();
 
-loader.load('https://www.wcu.edu/_resources/maps/nc-counties.glb', (gltf) => {
+loader.load('nc-counties.glb', (gltf) => {
 
   const model = gltf.scene;
 
