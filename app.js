@@ -1,8 +1,8 @@
 import * as THREE from 'https://esm.sh/three@0.165.0';
 
-import { OrbitControls } from 'https://esm.sh/three@0.165.0/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'https://esm.sh/three@0.165.0/addons/controls/OrbitControls.js';
 
-import { GLTFLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'https://esm.sh/three@0.165.0/addons/loaders/GLTFLoader.js';
 
 
 // ---------------- SCENE ----------------
