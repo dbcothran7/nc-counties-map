@@ -1,0 +1,11 @@
+{
+  "Wake": {
+    "description": "Wake County is home to Raleigh and is the most populous county in North Carolina."
+  },
+  "Mecklenburg": {
+    "description": "Mecklenburg County includes Charlotte, the state's largest city."
+  },
+  "Buncombe": {
+    "description": "Buncombe County includes Asheville in the Blue Ridge Mountains."
+  }
+}
