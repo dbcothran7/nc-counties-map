@@ -66,8 +66,6 @@ loader.load(
   // SUCCESS
   (gltf) => {
 
-    document.getElementById('loading').style.display = 'none';
-
     const model = gltf.scene;
     console.log('Model loaded');
 
