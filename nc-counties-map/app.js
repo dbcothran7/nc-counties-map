@@ -1,7 +1,5 @@
 import * as THREE from 'https://esm.sh/three@0.165.0';
-
 import { OrbitControls } from 'https://esm.sh/three@0.165.0/examples/jsm/controls/OrbitControls';
-
 import { GLTFLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader';
 
 
@@ -15,9 +13,10 @@ const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  2000  // increased far plane
+  2000
 );
-camera.position.set(0, 0, 5); // temporary, gets overridden after model loads
+
+camera.position.set(0, 0, 5);
 
 
 // ---------------- STATE ----------------
@@ -26,9 +25,14 @@ let countyData = {};
 
 
 // ---------------- RENDERER ----------------
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
+
 document.getElementById('container').appendChild(renderer.domElement);
 
 
@@ -43,6 +47,7 @@ scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
 dirLight.position.set(50, 100, 50);
 dirLight.castShadow = true;
+
 scene.add(dirLight);
 
 
@@ -51,9 +56,15 @@ const label = document.getElementById('hover-label');
 
 
 // ---------------- LOAD DATA ----------------
-fetch('county-data.json')
+fetch('./county-data.json')
   .then(res => res.json())
-  .then(data => countyData = data);
+  .then(data => {
+    countyData = data;
+    console.log('County data loaded');
+  })
+  .catch(err => {
+    console.error('County data failed:', err);
+  });
 
 
 // ---------------- RAYCASTER ----------------
@@ -64,74 +75,87 @@ const mouse = new THREE.Vector2();
 // ---------------- LOAD MODEL ----------------
 const loader = new GLTFLoader();
 
-loader.load('nc-counties.glb', (gltf) => {
+loader.load(
 
-  const model = gltf.scene;
-  console.log('Model loaded');
+  './nc-counties.glb',
 
-  model.traverse((child) => {
-    if (child.isMesh) {
-      child.geometry.computeVertexNormals();
-      child.material = new THREE.MeshStandardMaterial({
-        color: 0x4a90e2,
-        roughness: 0.8,
-        metalness: 0.0,
-        flatShading: false
-      });
-      child.castShadow = true;
-      child.receiveShadow = true;
+  (gltf) => {
 
-      const edges = new THREE.EdgesGeometry(child.geometry);
-      const line = new THREE.LineSegments(
-        edges,
-        new THREE.LineBasicMaterial({ color: 0x111111 })
-      );
-      line.raycast = () => {};
-      child.add(line);
-    }
-  });
+    const model = gltf.scene;
 
-  scene.add(model);
+    console.log('Model loaded');
 
-  // fit camera AFTER model is in scene
-  const box = new THREE.Box3().setFromObject(model);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
+    model.traverse((child) => {
 
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const fov = camera.fov * (Math.PI / 180);
-  const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 0.8;
+      if (child.isMesh) {
 
-  camera.position.set(center.x, center.y + distance * 0.5, center.z + distance);
-  camera.lookAt(center);
-  controls.target.copy(center);
-  controls.update();
+        child.geometry.computeVertexNormals();
 
-  console.log('Model center:', center);
-  console.log('Model size:', size);
-  console.log('Camera distance:', distance);
-});
+        child.material = new THREE.MeshStandardMaterial({
+          color: 0x4a90e2,
+          roughness: 0.8,
+          metalness: 0.0,
+          flatShading: false
+        });
 
-  // ---------------- CENTER MODEL ----------------
-  const box = new THREE.Box3().setFromObject(model);
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
+        child.castShadow = true;
+        child.receiveShadow = true;
 
-  model.position.sub(center);
+        const edges = new THREE.EdgesGeometry(child.geometry);
 
-  // ---------------- CAMERA (45° VIEW) ----------------
-  const distance = Math.max(size.x, size.y, size.z) * 1.2;
+        const line = new THREE.LineSegments(
+          edges,
+          new THREE.LineBasicMaterial({
+            color: 0x111111
+          })
+        );
 
-  camera.position.set(distance, distance * 0.8, distance);
-  controls.target.set(0, 0, 0);
-  controls.update();
+        line.raycast = () => {};
 
-  scene.add(model);
+        child.add(line);
+      }
+    });
 
-});
+    scene.add(model);
 
 
-// ---------------- CLICK (MODAL) ----------------
+    // ---------------- FIT CAMERA ----------------
+    const box = new THREE.Box3().setFromObject(model);
+
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    const fov = camera.fov * (Math.PI / 180);
+
+    const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 0.8;
+
+
+    camera.position.set(
+      center.x,
+      center.y + distance * 0.5,
+      center.z + distance
+    );
+
+    camera.lookAt(center);
+
+    controls.target.copy(center);
+    controls.update();
+
+    console.log('Model centered');
+  },
+
+  undefined,
+
+  (error) => {
+    console.error('GLB LOAD ERROR:', error);
+  }
+
+);
+
+
+// ---------------- CLICK ----------------
 window.addEventListener('click', (event) => {
 
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -148,6 +172,7 @@ window.addEventListener('click', (event) => {
     if (obj.isMesh && obj.parent) {
 
       openModal(obj.name);
+
       break;
     }
   }
@@ -167,14 +192,18 @@ window.addEventListener('mousemove', (event) => {
   let found = null;
 
   for (const hit of hits) {
+
     if (hit.object.isMesh && hit.object.material) {
+
       found = hit.object;
+
       break;
     }
   }
 
-  // reset previous hover
+  // reset previous
   if (hovered && hovered !== found) {
+
     hovered.material.emissive.setHex(0x000000);
   }
 
@@ -187,10 +216,12 @@ window.addEventListener('mousemove', (event) => {
 
     label.style.display = 'block';
     label.innerText = hovered.name || 'County';
+
     label.style.left = event.clientX + 'px';
     label.style.top = event.clientY + 'px';
 
   } else {
+
     label.style.display = 'none';
   }
 });
@@ -206,13 +237,15 @@ function openModal(name) {
   document.getElementById('county-title').innerText = name;
 
   document.getElementById('county-description').innerText =
-    countyData[name]?.description || "No data available";
+    countyData[name]?.description || 'No data available';
 }
 
 
 // ---------------- CLOSE MODAL ----------------
 document.getElementById('close-btn').addEventListener('click', (e) => {
+
   e.stopPropagation();
+
   document.getElementById('modal').classList.add('hidden');
 });
 
@@ -221,16 +254,20 @@ document.getElementById('close-btn').addEventListener('click', (e) => {
 window.addEventListener('resize', () => {
 
   camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
 
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 
 // ---------------- ANIMATE ----------------
 function animate() {
+
   requestAnimationFrame(animate);
+
   controls.update();
+
   renderer.render(scene, camera);
 }
 
