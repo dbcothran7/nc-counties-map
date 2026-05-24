@@ -1,6 +1,9 @@
-import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'https://esm.sh/three@0.165.0';
+
+import { OrbitControls } from 'https://esm.sh/three@0.165.0/examples/jsm/controls/OrbitControls.js';
+
+import { GLTFLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
+
 import { DRACOLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/DRACOLoader.js';
 
 // ---------------- SCENE ----------------
@@ -56,8 +59,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-loader.load(
-  'nc-counties.glb',
+loader.load('./nc-counties.glb', ...)
 
   // ✅ SUCCESS
   (gltf) => {
