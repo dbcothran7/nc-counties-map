@@ -59,7 +59,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-loader.load('./nc-counties.glb', ...)
+loader.load('./nc-counties.glb',)
 
   // ✅ SUCCESS
   (gltf) => {
