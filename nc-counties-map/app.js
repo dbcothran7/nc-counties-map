@@ -15,8 +15,9 @@ const camera = new THREE.PerspectiveCamera(
   50,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  2000  // increased far plane
 );
+camera.position.set(0, 0, 5); // temporary, gets overridden after model loads
 
 
 // ---------------- STATE ----------------
@@ -66,38 +67,50 @@ const loader = new GLTFLoader();
 loader.load('nc-counties.glb', (gltf) => {
 
   const model = gltf.scene;
-
   console.log('Model loaded');
 
   model.traverse((child) => {
-
     if (child.isMesh) {
-    
-   child.geometry.computeVertexNormals();
-
-   child.material = new THREE.MeshStandardMaterial({
-  color: 0x4a90e2,
-  roughness: 0.8,
-  metalness: 0.0,
-  flatShading: false
-});
-
+      child.geometry.computeVertexNormals();
+      child.material = new THREE.MeshStandardMaterial({
+        color: 0x4a90e2,
+        roughness: 0.8,
+        metalness: 0.0,
+        flatShading: false
+      });
       child.castShadow = true;
       child.receiveShadow = true;
 
-      // OUTLINE (still visible but NOT raycast-targeted)
       const edges = new THREE.EdgesGeometry(child.geometry);
-
       const line = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({ color: 0x111111 })
       );
-
-      line.raycast = () => {}; // 👈 prevents outline from interfering
-
+      line.raycast = () => {};
       child.add(line);
     }
   });
+
+  scene.add(model);
+
+  // fit camera AFTER model is in scene
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+  const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 0.8;
+
+  camera.position.set(center.x, center.y + distance * 0.5, center.z + distance);
+  camera.lookAt(center);
+  controls.target.copy(center);
+  controls.update();
+
+  console.log('Model center:', center);
+  console.log('Model size:', size);
+  console.log('Camera distance:', distance);
+});
 
   // ---------------- CENTER MODEL ----------------
   const box = new THREE.Box3().setFromObject(model);
