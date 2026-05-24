@@ -4,7 +4,7 @@ import { OrbitControls } from 'https://esm.sh/three@0.165.0/examples/jsm/control
 
 import { GLTFLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader.js';
 
-import { DRACOLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/DRACOLoader.js';
+import { DRACOLoader } from 'https://esm.sh/three@0.165.0/examples/jsm/loaders/DRACOLoader.js';
 
 // ---------------- SCENE ----------------
 const scene = new THREE.Scene();
@@ -59,74 +59,63 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
-loader.load('./nc-counties.glb',)
+loader.load(
 
-  // ✅ SUCCESS
+  './nc-counties.glb',
+
+  // SUCCESS
   (gltf) => {
+
     document.getElementById('loading').style.display = 'none';
 
     const model = gltf.scene;
     console.log('Model loaded');
 
     model.traverse((child) => {
+
       if (child.isMesh) {
+
         child.geometry.computeVertexNormals();
+
         child.material = new THREE.MeshStandardMaterial({
           color: 0x4a90e2,
           roughness: 0.8,
           metalness: 0.0,
           flatShading: false
         });
+
         child.castShadow = true;
         child.receiveShadow = true;
 
         const edges = new THREE.EdgesGeometry(child.geometry);
+
         const line = new THREE.LineSegments(
           edges,
           new THREE.LineBasicMaterial({ color: 0x111111 })
         );
+
         line.raycast = () => {};
+
         child.add(line);
       }
+
     });
 
     scene.add(model);
 
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 0.8;
-
-    camera.position.set(center.x, center.y + distance * 0.5, center.z + distance);
-    camera.lookAt(center);
-    controls.target.copy(center);
-    controls.update();
-
-    console.log('Model center:', center, '| size:', size, '| distance:', distance);
   },
 
-  // 📶 PROGRESS
+  // PROGRESS
   (xhr) => {
-    const pct = xhr.total ? Math.round((xhr.loaded / xhr.total) * 100) : '??';
-    const el = document.getElementById('loading');
-    if (el) el.innerText = `Loading model… ${pct}%`;
-    console.log(`GLB: ${pct}% loaded`);
+    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
   },
 
-  // ❌ ERROR
+  // ERROR
   (error) => {
-    console.error('GLTFLoader error:', error);
-    const el = document.getElementById('loading');
-    if (el) {
-      el.innerText = '❌ Failed to load model. Check the browser console (F12) for details.';
-      el.style.color = 'red';
-    }
+    console.error('GLB failed to load:', error);
   }
-);
 
+);
 // ---------------- CLICK (MODAL) ----------------
 window.addEventListener('click', (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
