@@ -160,12 +160,59 @@ window.addEventListener('mousemove', (event) => {
 
 // ---------------- MODAL ----------------
 function openModal(name) {
-  document.getElementById('modal').classList.remove('hidden');
-  document.getElementById('county-title').innerText = name;
-  document.getElementById('county-description').innerText =
-    countyData[name]?.description || 'No data available';
-}
 
+  const data = countyData[name];
+
+  document.getElementById('modal').classList.remove('hidden');
+
+  document.getElementById('county-title').innerText = name;
+
+  if (!data) {
+    document.getElementById('county-description').innerHTML =
+      'No data available';
+    return;
+  }
+
+  document.getElementById('county-description').innerHTML = `
+
+    <div style="text-align:center;">
+
+      <img
+        src="${data.picture}"
+        alt="${data.contactName}"
+        style="
+          width:120px;
+          height:120px;
+          object-fit:cover;
+          border-radius:50%;
+          margin-bottom:15px;
+        "
+      >
+
+      <p>${data.description}</p>
+
+      <hr style="margin:15px 0;">
+
+      <p>
+        <strong>${data.contactName}</strong>
+      </p>
+
+      <p>
+        <a href="mailto:${data.email}">
+          ${data.email}
+        </a>
+      </p>
+
+      <p>
+        <a href="tel:${data.phone}">
+          ${data.phone}
+        </a>
+      </p>
+
+    </div>
+
+  `;
+}
 // ---------------- CLOSE MODAL ----------------
 document.getElementById('close-btn').addEventListener('click', (e) => {
   e.stopPropagation();
